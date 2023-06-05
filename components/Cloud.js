@@ -5,17 +5,25 @@ Command: npx gltfjsx@6.2.3 public/models/cloud/model.gltf
 
 import React, { useRef } from "react";
 import { useGLTF } from "@react-three/drei";
+import { fadeOnBeforeCompile } from "@/utils/fadeMaterials";
+import { useFrame } from "@react-three/fiber";
 
-export default function Cloud({ opacity, ...props }) {
+export default function Cloud({ sceneOpacity, ...props }) {
   const { nodes, materials } = useGLTF("./models/cloud/model.gltf");
+  const materialRef = useRef();
+
+  useFrame(() => {
+    materialRef.current.opacity = sceneOpacity.current;
+  });
+
   return (
     <group {...props} dispose={null}>
       <mesh geometry={nodes.Mball001.geometry}>
         <meshStandardMaterial
-          {...materials["lambert2SG.001"]}
+          ref={materialRef}
+          onBeforeCompile={fadeOnBeforeCompile}
           envMapIntensity={2}
           transparent
-          opacity={opacity}
         />
       </mesh>
     </group>

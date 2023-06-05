@@ -30,7 +30,9 @@ class MyDocument extends Document {
   render() {
     return (
       <Html>
-        <Head />
+        <Head>
+          <meta charSet="UTF-8" />
+        </Head>
         <body>
           <script>0</script>
           <Main />

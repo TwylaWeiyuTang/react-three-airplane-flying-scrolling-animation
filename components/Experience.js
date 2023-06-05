@@ -6,7 +6,7 @@ import {
   Text,
   useScroll,
 } from "@react-three/drei";
-import React, { useMemo, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 import Background from "./Background.js";
@@ -15,6 +15,10 @@ import Cloud from "./Cloud.js";
 import { useFrame } from "@react-three/fiber";
 import { DM_Serif_Display } from "next/font/google";
 import TextSection from "./TextSection.js";
+import { gsap } from "gsap";
+import { fadeOnBeforeCompile } from "@/utils/fadeMaterials.js";
+import { usePlay } from "@/contexts/Play.js";
+import { Speed } from "./Speed.js";
 
 const dm = DM_Serif_Display({
   weight: ["400"],
@@ -43,6 +47,9 @@ const Experience = () => {
     ],
     []
   );
+
+  const sceneOpacity = useRef(0);
+  const lineMaterialRef = useRef();
 
   const curve = useMemo(() => {
     return new THREE.CatmullRomCurve3(curvePoints, false, "catmullrom", 0.5);
@@ -106,15 +113,223 @@ const Experience = () => {
     ];
   }, []);
 
+  const clouds = useMemo(
+    () => [
+      // start
+      { position: new THREE.Vector3(-3.5, -3.2, -7) },
+      { position: new THREE.Vector3(3.5, -4, -10) },
+      {
+        position: new THREE.Vector3(-18, 0.2, -68),
+        scale: new THREE.Vector3(4, 4, 4),
+        rotation: new THREE.Euler(-Math.PI / 5, Math.PI / 6, 0),
+      },
+      {
+        position: new THREE.Vector3(10, -1.2, -52),
+        scale: new THREE.Vector3(2.5, 2.5, 2.5),
+      },
+
+      // first point
+      {
+        scale: new THREE.Vector3(4, 4, 4),
+        position: new THREE.Vector3(
+          curvePoints[1].x + 10,
+          curvePoints[1].y - 4,
+          curvePoints[1].z + 64
+        ),
+      },
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[1].x - 20,
+          curvePoints[1].y + 4,
+          curvePoints[1].z + 28
+        ),
+        rotation: new THREE.Euler(0, Math.PI / 7, 0),
+      },
+      {
+        scale: new THREE.Vector3(5, 5, 5),
+        position: new THREE.Vector3(
+          curvePoints[1].x - 13,
+          curvePoints[1].y + 4,
+          curvePoints[1].z - 62
+        ),
+        rotation: new THREE.Euler(0, Math.PI / 7, Math.PI / 5),
+      },
+      {
+        scale: new THREE.Vector3(5, 5, 5),
+        position: new THREE.Vector3(
+          curvePoints[1].x + 54,
+          curvePoints[1].y + 2,
+          curvePoints[1].z - 82
+        ),
+        rotation: new THREE.Euler(Math.PI / 2, Math.PI / 2, Math.PI / 3),
+      },
+      {
+        scale: new THREE.Vector3(5, 5, 5),
+        position: new THREE.Vector3(
+          curvePoints[1].x + 8,
+          curvePoints[1].y - 14,
+          curvePoints[1].z - 22
+        ),
+      },
+      // second point
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[2].x + 6,
+          curvePoints[2].y - 7,
+          curvePoints[2].z + 50
+        ),
+      },
+      {
+        scale: new THREE.Vector3(2, 2, 2),
+        position: new THREE.Vector3(
+          curvePoints[2].x - 2,
+          curvePoints[2].y + 4,
+          curvePoints[2].z - 26
+        ),
+      },
+      {
+        scale: new THREE.Vector3(4, 4, 4),
+        position: new THREE.Vector3(
+          curvePoints[2].x + 12,
+          curvePoints[2].y + 1,
+          curvePoints[2].z - 86
+        ),
+        rotation: new THREE.Euler(Math.PI / 4, 0, Math.PI / 3),
+      },
+      // THIRD POINT
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[3].x + 3,
+          curvePoints[3].y - 10,
+          curvePoints[3].z + 50
+        ),
+      },
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[3].x - 10,
+          curvePoints[3].y,
+          curvePoints[3].z + 30
+        ),
+        rotation: new THREE.Euler(Math.PI / 4, 0, Math.PI / 5),
+      },
+      {
+        scale: new THREE.Vector3(4, 4, 4),
+        position: new THREE.Vector3(
+          curvePoints[3].x - 20,
+          curvePoints[3].y - 5,
+          curvePoints[3].z - 8
+        ),
+        rotation: new THREE.Euler(Math.PI, 0, Math.PI / 5),
+      },
+      {
+        scale: new THREE.Vector3(5, 5, 5),
+        position: new THREE.Vector3(
+          curvePoints[3].x + 0,
+          curvePoints[3].y - 5,
+          curvePoints[3].z - 98
+        ),
+        rotation: new THREE.Euler(0, Math.PI / 3, 0),
+      },
+      // FOURTH POINT
+      {
+        scale: new THREE.Vector3(2, 2, 2),
+        position: new THREE.Vector3(
+          curvePoints[4].x + 3,
+          curvePoints[4].y - 10,
+          curvePoints[4].z + 2
+        ),
+      },
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[4].x + 24,
+          curvePoints[4].y - 6,
+          curvePoints[4].z - 42
+        ),
+        rotation: new THREE.Euler(Math.PI / 4, 0, Math.PI / 5),
+      },
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[4].x - 4,
+          curvePoints[4].y + 9,
+          curvePoints[4].z - 62
+        ),
+        rotation: new THREE.Euler(Math.PI / 3, 0, Math.PI / 3),
+      },
+      // FINAL
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[7].x + 12,
+          curvePoints[7].y - 5,
+          curvePoints[7].z + 60
+        ),
+        rotation: new THREE.Euler(-Math.PI / 4, -Math.PI / 6, 0),
+      },
+      {
+        scale: new THREE.Vector3(3, 3, 3),
+        position: new THREE.Vector3(
+          curvePoints[7].x - 12,
+          curvePoints[7].y + 5,
+          curvePoints[7].z + 120
+        ),
+        rotation: new THREE.Euler(Math.PI / 4, Math.PI / 6, 0),
+      },
+    ],
+    []
+  );
+
   // we want the camera, plane, and background to be together when scrolling
   const cameraGroup = useRef();
+  const camera = useRef();
   const cameraRail = useRef();
   const airplane = useRef();
   const scroll = useScroll();
   const lastScroll = useRef(0);
 
+  const { play, end, setEnd } = usePlay();
+
   useFrame((_state, delta) => {
+    if (window.innerWidth > window.innerHeight) {
+      // landscape
+      camera.current.fov = 30;
+      camera.current.position.z = 5;
+    } else {
+      // portrait
+      camera.current.fov = 80;
+      camera.current.position.z = 2;
+    }
+
+    lineMaterialRef.current.opacity = sceneOpacity.current;
     const scrollOffset = Math.max(0, scroll.offset);
+
+    // if explore button is clicked, make our scene visible
+    if (play && !end && sceneOpacity.current < 1) {
+      sceneOpacity.current = THREE.MathUtils.lerp(
+        sceneOpacity.current,
+        1,
+        delta * 0.1
+      );
+    }
+
+    // if we are at the end of the animation, make the scene disappear
+    if (end && sceneOpacity.current > 0) {
+      sceneOpacity.current = THREE.MathUtils.lerp(
+        sceneOpacity.current,
+        0,
+        delta
+      );
+    }
+
+    // stop the movement process at the end
+    if (end) {
+      return;
+    }
 
     // this is the default value, means the scroll speed is not slowed
     let friction = 1;
@@ -154,6 +369,9 @@ const Experience = () => {
     lerpedScrollOffset = Math.max(lerpedScrollOffset, 0);
 
     lastScroll.current = lerpedScrollOffset;
+
+    // make the animation timeline happen on scroll
+    tl.current.seek(lerpedScrollOffset * tl.current.duration());
 
     const curPoint = curve.getPoint(lerpedScrollOffset);
 
@@ -224,7 +442,96 @@ const Experience = () => {
 
     // with slerp we can rotate airplane smoothly
     airplane.current.quaternion.slerp(targetAirplaneQuaternion, delta * 2);
+
+    // detect if we are approaching the end of the animation
+    if (
+      cameraGroup.current.position.z <
+      curvePoints[curvePoints.length - 1].z + 100
+    ) {
+      setEnd(true);
+      planeOutTl.current.play();
+    }
   });
+
+  const tl = useRef();
+  const backgroundColors = useRef({
+    colorA: "#3535cc",
+    colorB: "#abaadd",
+  });
+
+  // timeline to animate airplane when explore is clicked
+  const planeTl = useRef();
+
+  const planeOutTl = useRef();
+
+  useLayoutEffect(() => {
+    tl.current = gsap.timeline();
+
+    // stop the animation from starting to play without scroll
+    tl.current.pause();
+
+    tl.current.to(backgroundColors.current, {
+      duration: 1,
+      colorA: "#6f35cc",
+      colorB: "#ffad30",
+    });
+
+    tl.current.to(backgroundColors.current, {
+      duration: 1,
+      colorA: "#424242",
+      colorB: "#ffcc00",
+    });
+
+    tl.current.to(backgroundColors.current, {
+      duration: 1,
+      colorA: "#81318b",
+      colorB: "#55ab8f",
+    });
+
+    planeTl.current = gsap.timeline();
+    planeTl.current.pause();
+    planeTl.current.from(airplane.current.position, {
+      duration: 3,
+      z: 5,
+      y: -2,
+    });
+
+    planeOutTl.current = gsap.timeline();
+    planeOutTl.current.pause();
+
+    // make the plane go slowly further and above
+    planeOutTl.current.to(
+      airplane.current.position,
+      {
+        duration: 10,
+        z: -250,
+        y: 10,
+      },
+      0
+    );
+
+    // same as the camera
+    planeOutTl.current.to(
+      cameraRail.current.position,
+      {
+        duration: 8,
+        y: 12,
+      },
+      0
+    );
+
+    // make the plane disappear
+    planeOutTl.current.to(airplane.current.position, {
+      duration: 1,
+      z: -1000,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (play) {
+      planeTl.current.play();
+    }
+  }, [play]);
 
   return (
     <>
@@ -233,9 +540,15 @@ const Experience = () => {
       {/* Plane */}
       <directionalLight position={[0, 3, 1]} intensity={0.1} />
       <group ref={cameraGroup}>
-        <Background />
+        <Speed />
+        <Background backgroundColors={backgroundColors} />
         <group ref={cameraRail}>
-          <PerspectiveCamera position={[0, 0, 5]} fov={30} makeDefault />
+          <PerspectiveCamera
+            ref={camera}
+            position={[0, 0, 5]}
+            fov={30}
+            makeDefault
+          />
         </group>
         <group ref={airplane}>
           <Float floatIntensity={1} speed={1.5} rotationIntensity={0.5}>
@@ -268,44 +581,18 @@ const Experience = () => {
           />
           <meshStandardMaterial
             color={"white"}
+            ref={lineMaterialRef}
             transparent
             envMapIntensity={2}
+            onBeforeCompile={fadeOnBeforeCompile}
           />
         </mesh>
       </group>
 
       {/* Clouds */}
-      <Cloud scale={[1, 1, 1.5]} position={[-3.5, -1.2, -7]} />
-      <Cloud scale={[1, 1, 2]} position={[3.5, -1, -10]} rotation-y={Math.PI} />
-      <Cloud
-        scale={[1, 1, 1]}
-        position={[-3.5, 0.2, -12]}
-        rotation-y={Math.PI / 3}
-      />
-      <Cloud scale={[1, 1, 1]} position={[3.5, 0.2, -12]} />
-      <Cloud
-        scale={[0.4, 0.4, 0.4]}
-        position={[1, -0.2, -12]}
-        rotation-y={Math.PI / 9}
-      />
-      <Cloud scale={[0.3, 0.5, 2]} position={[-4, -0.5, -53]} />
-      <Cloud scale={[0.8, 0.8, 0.8]} position={[-1, -1.5, -100]} />
-      {/* <Cloud opacity={0.5} scale={[0.3, 0.3, 0.3]} position={[-2, 1, -3]} />
-      <Cloud opacity={0.5} scale={[0.2, 0.3, 0.4]} position={[1.5, -0.5, -2]} />
-      <Cloud
-        opacity={0.7}
-        scale={[0.3, 0.3, 0.4]}
-        rotation-y={Math.PI / 9}
-        position={[2, -0.2, -2]}
-      />
-      <Cloud
-        opacity={0.7}
-        scale={[0.4, 0.4, 0.4]}
-        rotation-y={Math.PI / 9}
-        position={[1, -0.2, -12]}
-      />
-      <Cloud opacity={0.7} scale={[0.5, 0.5, 0.5]} position={[-1, 1, -53]} />
-      <Cloud opacity={0.3} scale={[0.8, 0.8, 0.8]} position={[0, 1, -100]} /> */}
+      {clouds.map((cloud, i) => (
+        <Cloud sceneOpacity={sceneOpacity} {...cloud} key={i} />
+      ))}
     </>
   );
 };
